@@ -1,0 +1,49 @@
+{
+  "mailaddress": [
+    {
+      "PutRequest": {
+        "Item": {
+          "email": {
+            "S": "success@simulator.amazonses.com"
+          },
+          "username": {
+            "S": "alice"
+          },
+          "haserror": {
+            "N": "0"
+          }
+        }
+      }
+    },
+    {
+      "PutRequest": {
+        "Item": {
+          "email": {
+            "S": "bounce@simulator.amazonses.com"
+          },
+          "username": {
+            "S": "bob"
+          },
+          "haserror": {
+            "N": "0"
+          }
+        }
+      }
+    },
+    {
+      "PutRequest": {
+        "Item": {
+          "email": {
+            "S": "ooto-recipient@simulator.amazonses.com"
+          },
+          "username": {
+            "S": "carol"
+          },
+          "haserror": {
+            "N": "0"
+          }
+        }
+      }
+    }
+  ]
+}
