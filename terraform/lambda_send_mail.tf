@@ -80,19 +80,17 @@ resource "aws_lambda_function" "lambda_send_mail" {
   source_code_hash = filebase64sha256(data.archive_file.lambda_send_mail_package.output_path)
   role             = aws_iam_role.send_mail_role.arn
   handler          = "main.lambda_handler"
-  runtime          = "python3.11"
+  runtime          = "python3.12"
   timeout          = 3
   layers           = [var.powertools_layer_arn]
   environment {
     variables = {
-      LOG_LEVEL               = "DEBUG",
+      POWERTOOLS_LOG_LEVEL    = var.lambda_log_level,
       POWERTOOLS_SERVICE_NAME = "sendMail"
       # TABLE_NAME              = aws_dynamodb_table.mailaddress.name,
       # QUEUE_URL               = aws_sqs_queue.mailsendqueue.url,
       SENDER_MAIL_ADDRESS = aws_ssm_parameter.sender_mail_address.value
     }
   }
-  tags = {
-    Environment = "development"
-  }
+
 }

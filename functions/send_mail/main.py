@@ -2,6 +2,7 @@ import json
 import os
 
 import boto3
+from aws_lambda_powertools import Tracer
 from aws_lambda_powertools.logging.logger import Logger
 from aws_lambda_powertools.utilities.data_classes import (
     SQSEvent,
@@ -14,11 +15,14 @@ SENDER_MAIL_ADDRESS = os.environ["SENDER_MAIL_ADDRESS"]
 s3 = boto3.client("s3")
 ses = boto3.client("ses")
 logger = Logger()
+tracer = Tracer()
 
 
 @event_source(data_class=SQSEvent)
+@tracer.capture_lambda_handler
 @logger.inject_lambda_context(log_event=True)
 def lambda_handler(event: SQSEvent, context):
+    # SQSからは,bodyでメールアドレス,attributeでS3から読み込むべきファイル名を受けとる
     for record in event.records:
         try:
             email = record.body
@@ -28,7 +32,9 @@ def lambda_handler(event: SQSEvent, context):
 
             response = s3.get_object(Bucket=bucket_name, Key=filename)
             _mail_body = response["Body"].read().decode("utf-8")
-            subject, _, mail_body = _mail_body.split("\n", 3)
+            # ファイルの内容の形式はREADMEの仕様に従う
+            subject, mail_body = _mail_body.split("\n", 2)
+            # TODO 表題と本文のvalidation
 
             response = ses.send_email(
                 Source=SENDER_MAIL_ADDRESS,
@@ -39,10 +45,10 @@ def lambda_handler(event: SQSEvent, context):
                     "Body": {"Text": {"Data": mail_body, "Charset": "UTF-8"}},
                 },
             )
-            logger.debug(json.dumps(response))
+            logger.debug(response)
 
         except Exception as e:
-            logger.error(e)
+            logger.exception(e)
 
     return {
         "statusCode": 200,

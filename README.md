@@ -1,19 +1,48 @@
 # メール配信システム
 
-## 構成
+## 仕様
 
-## Commands
+- 配信先アドレスをテーブルに登録
+- テキストファイルをS3バケットにuploadすると,登録した配信先にメール配信
+- テキストファイルの[サンプル](./data/example.txt). 1行目がタイトル,2行目以降が本文
+- 配信に失敗した(bounceが返ってきた)アドレスはテーブルでステータスを更新
 
-```bash
-# 初期データの登録
-aws dynamodb batch-write-item \
-  --request-items file://data/mailaddress_items.json
+## 構成図
 
-# メール本文のアップロード
-aws s3 cp data/example.txt s3://mailbody-asjdfajlsa/
+![alt](./diagrams/arch.drawio.svg)
 
+## デプロイ
+
+```sh
+# 予め"dev"プロファイルを設定
+cd terraform 
+terraform fmt
+tflint
+terraform plan --var aws_profile=dev
+terraform apply --var aws_profile=dev
 ```
 
-## memo
+## 実行準備
 
-## TODO
+<!-- TODO terraform化 -->
+- Lamnda`bounceReceive`にSNSトリガーを追加
+- `terraform.tfvars`で指定したメールアドレスをSESでID検証(Email Address Verification Requestメールが届く)
+- 初期データの登録
+
+  ```sh
+  aws --profile dev dynamodb batch-write-item \
+    --request-items file://data/mailaddress_items.json
+  ```
+
+## 実行手順
+
+- メール本文のアップロード
+
+  ```sh
+  aws --profile dev s3 cp data/example.txt s3://mailbody-xxx/
+  ```
+
+## 関数の更新
+
+- planでzip化
+- cliでupload

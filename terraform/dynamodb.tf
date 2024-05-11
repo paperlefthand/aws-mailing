@@ -15,9 +15,7 @@ resource "aws_dynamodb_table" "mailaddress" {
     hash_key        = "haserror"
     projection_type = "ALL"
   }
-  tags = {
-    Environment = "development"
-  }
+
 }
 
 

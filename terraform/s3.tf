@@ -1,9 +1,7 @@
 resource "aws_s3_bucket" "mailbody" {
   bucket = var.bucket_name
-
-  tags = {
-    Environment = "development"
-  }
+  # ファイルが残っていてもdestroyでバケットごと削除
+  force_destroy = true
 }
 
 resource "aws_s3_bucket_notification" "mailbody_notification" {

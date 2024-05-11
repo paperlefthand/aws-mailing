@@ -34,10 +34,25 @@
       "PutRequest": {
         "Item": {
           "email": {
-            "S": "ooto-recipient@simulator.amazonses.com"
+            "S": "ooto@simulator.amazonses.com"
           },
           "username": {
             "S": "carol"
+          },
+          "haserror": {
+            "N": "0"
+          }
+        }
+      }
+    }
+,    {
+      "PutRequest": {
+        "Item": {
+          "email": {
+            "S": "complaint@simulator.amazonses.com"
+          },
+          "username": {
+            "S": "david"
           },
           "haserror": {
             "N": "0"

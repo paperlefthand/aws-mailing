@@ -42,13 +42,13 @@ resource "aws_iam_role_policy_attachment" "bounce_receive_role_dynamodb_full_acc
   policy_arn = "arn:aws:iam::aws:policy/AmazonDynamoDBFullAccess"
 }
 
-# resource "aws_lambda_permission" "mailbody_bucket_permission" {
-#   statement_id  = "AllowExecutionFromS3Bucket"
-#   action        = "lambda:InvokeFunction"
-#   function_name = aws_lambda_function.lambda_bounce_receive.function_name
-#   principal     = "s3.amazonaws.com"
-#   source_arn    = aws_s3_bucket.mailbody.arn
-# }
+resource "aws_lambda_permission" "sns_subscription_permission" {
+  statement_id  = "AllowExecutionFromSNS"
+  action        = "lambda:InvokeFunction"
+  function_name = aws_lambda_function.lambda_bounce_receive.function_name
+  principal     = "s3.amazonaws.com"
+  source_arn    = aws_sns_topic.bounce-notification.arn
+}
 
 data "archive_file" "lambda_bounce_receive_package" {
   type        = "zip"
@@ -62,18 +62,16 @@ resource "aws_lambda_function" "lambda_bounce_receive" {
   source_code_hash = filebase64sha256(data.archive_file.lambda_bounce_receive_package.output_path)
   role             = aws_iam_role.bounce_receive_role.arn
   handler          = "main.lambda_handler"
-  runtime          = "python3.11"
+  runtime          = "python3.12"
   timeout          = 3
   layers           = [var.powertools_layer_arn]
   environment {
     variables = {
-      LOG_LEVEL               = "DEBUG",
+      POWERTOOLS_LOG_LEVEL    = var.lambda_log_level,
       POWERTOOLS_SERVICE_NAME = "bounceReceive"
       TABLE_NAME              = aws_dynamodb_table.mailaddress.name,
     }
   }
-  tags = {
-    Environment = "development"
-  }
+
 }
 
